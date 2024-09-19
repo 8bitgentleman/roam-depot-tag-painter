@@ -1,0 +1,58 @@
+/* src/tagPainter.css */
+
+.tag-popover-search-results,
+.tag-popover-selected-styles {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.tag-popover-search-results::-webkit-scrollbar,
+.tag-popover-selected-styles::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tag-popover-search-results::-webkit-scrollbar-track,
+.tag-popover-selected-styles::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.tag-popover-search-results::-webkit-scrollbar-thumb,
+.tag-popover-selected-styles::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.tag-popover-search-results::-webkit-scrollbar-thumb:hover,
+.tag-popover-selected-styles::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.tag-popover-search-results .bp3-menu-item,
+.tag-popover-selected-styles .bp3-form-group {
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.tag-popover-content {
+    max-width: 300px;
+    width: 100%;
+}
+
+.tag-popover-search-results,
+.tag-popover-selected-styles {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Hide increment/decrement buttons */
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+}

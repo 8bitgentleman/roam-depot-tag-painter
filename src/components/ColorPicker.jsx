@@ -6,7 +6,10 @@ export const ColorPicker = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleColorChange = useCallback((color) => {
-    onChange(color.hex);
+    // Include alpha in the color value
+    const { r, g, b, a } = color.rgb;
+    const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+    onChange(rgba);
   }, [onChange]);
 
   const handleClose = useCallback(() => {
@@ -23,12 +26,12 @@ export const ColorPicker = ({ value, onChange }) => {
       isOpen={isOpen}
       onInteraction={(state) => setIsOpen(state)}
       content={
-        <div className={Classes.POPOVER_CONTENT} style={{ zIndex: 1000 }}>
+        <div className={Classes.POPOVER_CONTENT} style={{ zIndex: 9000 }}>
           <ChromePicker
-            color={value || '#000000'}
+            color={value || 'rgba(0, 0, 0, 1)'}
             onChange={handleColorChange}
             onChangeComplete={handleClose}
-            disableAlpha={true}
+            disableAlpha={false}
           />
         </div>
       }
@@ -39,7 +42,12 @@ export const ColorPicker = ({ value, onChange }) => {
       }}
     >
       <Button
-        style={{ backgroundColor: value || '#000000' }}
+        style={{
+          backgroundColor: value || 'rgba(0, 0, 0, 1)',
+          width: '30px',
+          height: '30px',
+          border: '1px solid #ccc'
+        }}
         className={Classes.BUTTON}
         onClick={handleClick}
       />

@@ -30,7 +30,7 @@ const runners = {
   listeners: new Map(),
 };
 
-const createPopover = (target, tagName) => {
+const createPopover = (target, tagName, extensionAPI) => {
   try {
     const existingPopover = document.querySelector('.tag-painter-popover');
     if (existingPopover) {
@@ -47,7 +47,7 @@ const createPopover = (target, tagName) => {
     parent.style.position = 'absolute';
     parent.style.left = `${rect.left}px`;
     parent.style.top = `${rect.bottom}px`;
-    parent.style.zIndex = '90';
+    // parent.style.zIndex = '90';
 
     let selectedStyles = {};
 
@@ -66,6 +66,7 @@ const createPopover = (target, tagName) => {
     ReactDOM.render(
       <TagPopoverMenu
         tagName={tagName}
+        extensionAPI={extensionAPI}
         onClose={(styles) => {
           selectedStyles = styles;
         }}
@@ -79,9 +80,8 @@ const createPopover = (target, tagName) => {
   }
 };
 
-const popperFunction = (e) => {
+const popperFunction = (e, extensionAPI) => {
   try {
-    // Check if the target is already a popover or its child
     if (e.target.closest('.tag-painter-popover')) {
       return;
     }
@@ -90,23 +90,24 @@ const popperFunction = (e) => {
     if (tag.startsWith("#")) {
       tag = tag.slice(1);
     }
-    createPopover(e.target, tag);
+    createPopover(e.target, tag, extensionAPI);
   } catch (error) {
     console.error("Error in popperFunction:", error);
   }
 };
 
-const addListenersToTags = () => {
+const addListenersToTags = (extensionAPI) => {
   try {
     const tags = document.querySelectorAll(".rm-page-ref--tag");
     tags.forEach(tag => {
       if (!runners.listeners.has(tag)) {
-        const listener = (e) => popperFunction(e);
+        const listener = (e) => popperFunction(e, extensionAPI);
         tag.addEventListener("mouseenter", listener);
         runners.listeners.set(tag, listener);
       }
     });
   } catch (error) {
+    console.error("Error in addListenersToTags:", error);
   }
 };
 
@@ -126,12 +127,11 @@ async function onload({ extensionAPI }) {
 
     // Set up the observer
     runners.observer = createObserver(() => {
-      addListenersToTags();
+      addListenersToTags(extensionAPI);
     });
 
     // Initial addition of listeners
-    addListenersToTags();
-
+    addListenersToTags(extensionAPI);
   } catch (error) {
     console.error("[onload] Error", error);
   }
@@ -144,6 +144,9 @@ function onunload() {
     }
 
     removeListenersFromTags();
+
+    // Remove all tag-painter style elements
+    document.querySelectorAll('style[id^="tag-painter-style-"]').forEach(el => el.remove());
 
     console.log("[onunload]", { extensionName, version: pkg.version });
   } catch (error) {
