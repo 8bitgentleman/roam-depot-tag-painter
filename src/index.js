@@ -9,23 +9,6 @@ import { TagPopoverMenu } from './components/TagPopoverMenu';
 import { applyStylesToTag } from './utils/roamStyler';
 
 const extensionName = formatPackageName(pkg.name);
-// TODO what should go in the settings panel?
-// const panelConfig = {
-//   tabTitle: extensionName,
-//   settings: [
-//     {
-//       id: "button-setting",
-//       name: "Button test",
-//       description: "tests the button",
-//       action: {
-//         type: "button",
-//         onClick: () => { console.log("Button clicked!"); },
-//         content: "Button"
-//       }
-
-//     }
-//   ]
-// };
 
 // Store observers and listeners globally so they can be managed
 const runners = {
@@ -123,6 +106,7 @@ const removeListenersFromTags = () => {
 };
 
 let isTagEditingActive = false;
+let topbarButton = null;
 
 const toggleTagEditing = (extensionAPI) => {
   if (isTagEditingActive) {
@@ -153,25 +137,24 @@ const updateButtonStyle = () => {
 };
 
 const addTagPainterButton = (extensionAPI) => {
+  if (topbarButton) return; // Prevent adding multiple buttons
+
   const button = createIconButton('style');
   button.id = 'tag-painter-button';
   button.addEventListener('click', () => toggleTagEditing(extensionAPI));
 
-  // Find the calendar icon using the correct selector
   const calendarIcon = document.querySelector('.rm-topbar .bp3-icon-calendar');
   if (!calendarIcon) {
     console.error("Couldn't find the calendar icon");
     return;
   }
 
-  // Find the parent span of the calendar icon (which should be the bp3-popover-wrapper)
   const calendarWrapper = calendarIcon.closest('.bp3-popover-wrapper');
   if (!calendarWrapper) {
     console.error("Couldn't find the calendar wrapper");
     return;
   }
 
-  // Create a container for our button that matches the structure of other topbar items
   const buttonWrapper = document.createElement('span');
   buttonWrapper.className = 'bp3-popover-wrapper';
   const buttonTarget = document.createElement('span');
@@ -179,13 +162,31 @@ const addTagPainterButton = (extensionAPI) => {
   buttonTarget.appendChild(button);
   buttonWrapper.appendChild(buttonTarget);
 
-  // Insert our button wrapper before the calendar wrapper
   calendarWrapper.parentNode.insertBefore(buttonWrapper, calendarWrapper);
 
-  // Add a spacer between our button and the calendar
   const spacer = document.createElement('div');
   spacer.className = 'rm-topbar__spacer-sm';
   calendarWrapper.parentNode.insertBefore(spacer, calendarWrapper);
+
+  topbarButton = buttonWrapper;
+};
+
+const removeTagPainterButton = () => {
+  if (topbarButton) {
+    const nextSpacer = topbarButton.nextElementSibling;
+    if (nextSpacer && nextSpacer.className === 'rm-topbar__spacer-sm') {
+      nextSpacer.remove();
+    }
+    topbarButton.remove();
+    topbarButton = null;
+  }
+};
+
+const addCommandPaletteCommand = (extensionAPI) => {
+  extensionAPI.ui.commandPalette.addCommand({
+    label: 'Toggle Tag Painter',
+    callback: () => toggleTagEditing(extensionAPI)
+  });
 };
 
 const loadAndApplyAllStyles = async (extensionAPI) => {
@@ -216,8 +217,37 @@ const loadAndApplyAllStyles = async (extensionAPI) => {
 
 async function onload({ extensionAPI }) {
   try {
-    // extensionAPI.settings.panel.create(panelConfig);
-    addTagPainterButton(extensionAPI);
+    const panelConfig = {
+      tabTitle: extensionName,
+      settings: [
+        {
+          id: "show-topbar-button",
+          name: "Show Topbar Button",
+          description: "Toggle visibility of the Tag Painter button in the topbar",
+          action: {
+            type: "switch",
+            onChange: (evt) => {
+              if (evt.target.checked) {
+                addTagPainterButton(extensionAPI);
+              } else {
+                removeTagPainterButton();
+              }
+              extensionAPI.settings.set('show-topbar-button', evt.target.checked);
+            }
+          }
+        }
+      ]
+    };
+
+    extensionAPI.settings.panel.create(panelConfig);
+    
+    const showTopbarButton = await extensionAPI.settings.get('show-topbar-button') ?? true;
+    if (showTopbarButton) {
+      addTagPainterButton(extensionAPI);
+    }
+
+    addCommandPaletteCommand(extensionAPI);
+    
     await loadAndApplyAllStyles(extensionAPI);
   } catch (error) {
     console.error("[onload] Error", error);
@@ -232,21 +262,9 @@ function onunload() {
       runners.observer.disconnect();
     }
 
-    // Remove all tag-painter style elements
     document.querySelectorAll('style[id^="tag-painter-style-"]').forEach(el => el.remove());
 
-    // Remove the tag painter button and its associated spacer
-    const button = document.getElementById('tag-painter-button');
-    if (button) {
-      const container = button.closest('.bp3-popover-wrapper');
-      if (container) {
-        const nextSpacer = container.nextElementSibling;
-        if (nextSpacer && nextSpacer.className === 'rm-topbar__spacer-sm') {
-          nextSpacer.remove();
-        }
-        container.remove();
-      }
-    }
+    removeTagPainterButton();
 
     console.log("[onunload]", { extensionName, version: pkg.version });
   } catch (error) {
