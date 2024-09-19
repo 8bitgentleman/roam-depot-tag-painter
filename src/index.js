@@ -1,7 +1,8 @@
-import pkg from './package.json';
+import pkg from '../package.json';
+import { formatPackageName } from './utils';
 
 const panelConfig = {
-  tabTitle: pkg.name,
+  tabTitle: formatPackageName(pkg.name),
   settings: [
       {id:          "button-setting",
        name:        "Button test",
@@ -27,17 +28,52 @@ const panelConfig = {
   ]
 };
 
+// store observers globally so they can be disconnected 
+var runners = {
+  observers: [],
+  listeners: [],
+}
+
 async function onload({extensionAPI}) {
-  // set defaults if they don't exist
-  if (!extensionAPI.settings.get('data')) {
-      await extensionAPI.settings.set('data', "01");
-  }
   extensionAPI.settings.panel.create(panelConfig);
+
+  const popperFunction = (e) => {
+    let t = e['target'];
+    let tag = e['target'].innerText;
+
+    if (tag.startsWith("#")) {
+      tag = tag.slice(1)
+    }
+
+    console.log(tag, t);
+  };
+  runners["listeners"].push(popperFunction);
+
+  var tagObserver = createObserver(() => {
+  
+    if (document.querySelectorAll(".rm-page-ref--tag")) {
+      var tags = document.querySelectorAll(".rm-page-ref--tag");
+      tags.forEach(li =>{
+        li.addEventListener("mouseover", popperFunction);
+      })
+    }})
+  
+  runners["observers"].push(tagObserver);
 
   console.log(`${pkg.name} version ${pkg.version} loaded`);
 }
 
 function onunload() {
+  // remove observers
+  runners["observers"].forEach(element =>{element.disconnect();})
+
+  // remove listeners
+  if (document.querySelectorAll(".rm-page-ref--tag")) {
+    var tags = document.querySelectorAll(".rm-page-ref--tag");
+    tags.forEach(li =>{
+      li.removeEventListener('mouseover', runners["listeners"][0]);
+
+    })}
   console.log(`${pkg.name} version ${pkg.version} unloaded`);
 }
 
