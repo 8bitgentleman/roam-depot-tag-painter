@@ -8,6 +8,8 @@ const CSS_PROPERTIES = [
     'font-weight',
     'font-style',
     'text-decoration',
+    'before',
+    'after'
     // Add more properties as needed
   ];
   

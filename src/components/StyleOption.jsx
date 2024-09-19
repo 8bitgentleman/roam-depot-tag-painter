@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FormGroup, HTMLSelect } from '@blueprintjs/core';
+import { Button, HTMLSelect } from '@blueprintjs/core';
 import { ColorPicker } from './ColorPicker';
 
 export const StyleOption = ({ property, value, onChange, onRemove }) => {
@@ -51,12 +51,16 @@ export const StyleOption = ({ property, value, onChange, onRemove }) => {
   };
 
   return (
-    <FormGroup
-      label={property}
-      labelInfo={<Button icon="trash" minimal={true} small={true} onClick={() => onRemove(property)} />}
-      className="bp3-form-group"
-    >
-      {renderStylePicker()}
-    </FormGroup>
+    <div className="bp3-form-group" style={{ marginBottom: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <label className="bp3-label" style={{ marginRight: '10px', minWidth: '100px' }}>
+          {property}
+        </label>
+        <div style={{ flexGrow: 1, marginRight: '10px' }}>
+          {renderStylePicker()}
+        </div>
+        <Button icon="trash" minimal={true} small={true} onClick={() => onRemove(property)} />
+      </div>
+    </div>
   );
 };

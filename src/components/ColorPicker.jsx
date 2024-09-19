@@ -1,40 +1,47 @@
-import React, { useState } from 'react';
-import { Button, Popover, Classes, InputGroup } from '@blueprintjs/core';
+import React, { useState, useCallback } from 'react';
+import { Button, Popover, Classes } from '@blueprintjs/core';
+import { ChromePicker } from 'react-color';
 
 export const ColorPicker = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleColorChange = (e) => {
-    onChange(e.target.value);
-  };
+  const handleColorChange = useCallback((color) => {
+    onChange(color.hex);
+  }, [onChange]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleClick = useCallback((event) => {
+    event.stopPropagation();
+    setIsOpen(!isOpen);
+  }, [isOpen]);
 
   return (
     <Popover
-      style={{ zIndex: 9999 }}
       isOpen={isOpen}
       onInteraction={(state) => setIsOpen(state)}
       content={
-        <div className={Classes.POPOVER_CONTENT}>
-          <InputGroup
-            type="color"
-            value={value || '#000000'}
+        <div className={Classes.POPOVER_CONTENT} style={{ zIndex: 1000 }}>
+          <ChromePicker
+            color={value || '#000000'}
             onChange={handleColorChange}
-            rightElement={
-              <Button
-                minimal={true}
-                onClick={() => setIsOpen(false)}
-                text="Close"
-              />
-            }
+            onChangeComplete={handleClose}
+            disableAlpha={true}
           />
         </div>
       }
       placement="bottom"
+      modifiers={{ 
+        preventOverflow: { enabled: false },
+        offset: { enabled: true, offset: '0, 10' }
+      }}
     >
       <Button
         style={{ backgroundColor: value || '#000000' }}
         className={Classes.BUTTON}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleClick}
       />
     </Popover>
   );

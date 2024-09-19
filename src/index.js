@@ -32,7 +32,6 @@ const runners = {
 
 const createPopover = (target, tagName) => {
   try {
-    // Check if a popover already exists anywhere in the document
     const existingPopover = document.querySelector('.tag-painter-popover');
     if (existingPopover) {
       ReactDOM.unmountComponentAtNode(existingPopover);
@@ -48,11 +47,15 @@ const createPopover = (target, tagName) => {
     parent.style.position = 'absolute';
     parent.style.left = `${rect.left}px`;
     parent.style.top = `${rect.bottom}px`;
-    parent.style.zIndex = '999';
+    parent.style.zIndex = '90';
+
+    let selectedStyles = {};
 
     const handleClickOutside = (event) => {
-      if (parent && !parent.contains(event.target) && !target.contains(event.target)) {
+      if (parent && !parent.contains(event.target) && !target.contains(event.target) && !event.target.closest('.bp3-popover')) {
         document.removeEventListener('mousedown', handleClickOutside);
+        console.log("Selected styles:", selectedStyles);
+        // Here you can handle the selected styles, e.g., save them to storage
         ReactDOM.unmountComponentAtNode(parent);
         parent.remove();
       }
@@ -63,10 +66,8 @@ const createPopover = (target, tagName) => {
     ReactDOM.render(
       <TagPopoverMenu
         tagName={tagName}
-        onClose={() => {
-          document.removeEventListener('mousedown', handleClickOutside);
-          ReactDOM.unmountComponentAtNode(parent);
-          parent.remove();
+        onClose={(styles) => {
+          selectedStyles = styles;
         }}
       />,
       parent

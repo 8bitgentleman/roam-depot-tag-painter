@@ -25,7 +25,10 @@ export const TagPopoverMenu = ({ tagName, onClose }) => {
     if (Object.keys(selectedStyles).length > 0) {
       applyStyles();
     }
-  }, [selectedStyles, tagName]);
+    
+    // Call onClose with the updated selectedStyles
+    onClose(selectedStyles);
+  }, [selectedStyles, tagName, onClose]);
 
   const handleStyleChange = useCallback((property, value) => {
     setSelectedStyles(prevStyles => ({
@@ -56,7 +59,7 @@ export const TagPopoverMenu = ({ tagName, onClose }) => {
   }, []);
 
   return (
-    <Card className="tag-popover-content bp3-popover-content" elevation={2}>
+    <Card className="tag-popover-content bp3-popover-content" elevation={2} style={{ zIndex: 90, padding: '10px', minWidth: '300px' }}>
       <InputGroup
         placeholder="Search for styles..."
         value={searchTerm}
@@ -70,7 +73,7 @@ export const TagPopoverMenu = ({ tagName, onClose }) => {
         }
         className="tag-popover-search"
       />
-      <Divider />
+      <Divider style={{ margin: '10px 0' }} />
       {isSearching ? (
         <Menu>
           {searchResults.map(property => (
@@ -82,7 +85,7 @@ export const TagPopoverMenu = ({ tagName, onClose }) => {
           ))}
         </Menu>
       ) : (
-        <>
+        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
           {Object.entries(selectedStyles).map(([property, value]) => (
             <StyleOption
               key={property}
@@ -92,9 +95,9 @@ export const TagPopoverMenu = ({ tagName, onClose }) => {
               onRemove={handleRemoveStyle}
             />
           ))}
-        </>
+        </div>
       )}
-      {isApplying && <div className="bp3-text-muted">Applying styles...</div>}
+      {isApplying && <div className="bp3-text-muted" style={{ marginTop: '10px' }}>Applying styles...</div>}
     </Card>
   );
 };
