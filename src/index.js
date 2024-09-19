@@ -1,6 +1,6 @@
 // src/index.js
 import pkg from '../package.json';
-import { formatPackageName } from './utils';
+import { formatPackageName } from './utils/utils';
 import createObserver from "roamjs-components/dom/createObserver";
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -32,14 +32,39 @@ const runners = {
 
 const createPopover = (target, tagName) => {
   try {
+    // Check if a popover already exists anywhere in the document
+    const existingPopover = document.querySelector('.tag-painter-popover');
+    if (existingPopover) {
+      ReactDOM.unmountComponentAtNode(existingPopover);
+      existingPopover.remove();
+    }
+
     const parent = document.createElement("div");
+    parent.className = 'tag-painter-popover';
     document.body.appendChild(parent);
+
+    // Position the popover near the tag
+    const rect = target.getBoundingClientRect();
+    parent.style.position = 'absolute';
+    parent.style.left = `${rect.left}px`;
+    parent.style.top = `${rect.bottom}px`;
+    parent.style.zIndex = '999';
+
+    const handleClickOutside = (event) => {
+      if (parent && !parent.contains(event.target) && !target.contains(event.target)) {
+        document.removeEventListener('mousedown', handleClickOutside);
+        ReactDOM.unmountComponentAtNode(parent);
+        parent.remove();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
 
     ReactDOM.render(
       <TagPopoverMenu
         tagName={tagName}
-        targetElement={target}
         onClose={() => {
+          document.removeEventListener('mousedown', handleClickOutside);
           ReactDOM.unmountComponentAtNode(parent);
           parent.remove();
         }}
@@ -49,17 +74,24 @@ const createPopover = (target, tagName) => {
 
     return parent;
   } catch (error) {
+    console.error("Error creating popover:", error);
   }
 };
 
 const popperFunction = (e) => {
   try {
+    // Check if the target is already a popover or its child
+    if (e.target.closest('.tag-painter-popover')) {
+      return;
+    }
+
     let tag = e.target.innerText;
     if (tag.startsWith("#")) {
       tag = tag.slice(1);
     }
     createPopover(e.target, tag);
   } catch (error) {
+    console.error("Error in popperFunction:", error);
   }
 };
 
