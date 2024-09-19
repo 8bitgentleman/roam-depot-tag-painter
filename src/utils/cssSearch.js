@@ -10,7 +10,7 @@ export const CSS_PROPERTIES = [
   'font-style',
   'text-decoration',
   'padding',
-  'box-shadow',
+  // 'box-shadow',
   'before',
   'after'
   // Add more properties as needed
