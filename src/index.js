@@ -6,6 +6,7 @@ import createIconButton from "roamjs-components/dom/createIconButton";
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { TagPopoverMenu } from './components/TagPopoverMenu';
+import { applyStylesToTag } from './utils/roamStyler';
 
 const extensionName = formatPackageName(pkg.name);
 // TODO what should go in the settings panel?
@@ -55,7 +56,6 @@ const createPopover = (target, tagName, extensionAPI) => {
     const handleClickOutside = (event) => {
       if (parent && !parent.contains(event.target) && !target.contains(event.target) && !event.target.closest('.bp3-popover')) {
         document.removeEventListener('mousedown', handleClickOutside);
-        console.log("Selected styles:", selectedStyles);
         // Here you can handle the selected styles, e.g., save them to storage
         ReactDOM.unmountComponentAtNode(parent);
         parent.remove();
@@ -188,11 +188,37 @@ const addTagPainterButton = (extensionAPI) => {
   calendarWrapper.parentNode.insertBefore(spacer, calendarWrapper);
 };
 
+const loadAndApplyAllStyles = async (extensionAPI) => {
+  try {
+    const allSettings = await extensionAPI.settings.getAll();
+    if (!allSettings) {
+      console.log("No settings found");
+      return;
+    }
+
+    Object.entries(allSettings).forEach(([key, value]) => {
+      if (key.startsWith('tagStyles-') && value !== null && value !== undefined) {
+        const tagName = key.replace('tagStyles-', '');
+        try {
+          const styles = JSON.parse(value);
+          applyStylesToTag(tagName, styles);
+        } catch (parseError) {
+          console.error(`Error parsing styles for tag ${tagName}:`, parseError);
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error loading and applying styles:", error);
+  }
+};
+
 // MARK: Load
+
 async function onload({ extensionAPI }) {
   try {
     // extensionAPI.settings.panel.create(panelConfig);
     addTagPainterButton(extensionAPI);
+    await loadAndApplyAllStyles(extensionAPI);
   } catch (error) {
     console.error("[onload] Error", error);
   }
