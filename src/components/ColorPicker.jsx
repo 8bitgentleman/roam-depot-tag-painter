@@ -4,17 +4,18 @@ import { ChromePicker } from 'react-color';
 
 export const ColorPicker = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [tempColor, setTempColor] = useState(value || 'rgba(0, 0, 0, 1)');
 
   const handleColorChange = useCallback((color) => {
-    // Include alpha in the color value
     const { r, g, b, a } = color.rgb;
     const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
-    onChange(rgba);
-  }, [onChange]);
+    setTempColor(rgba);
+  }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-  }, []);
+    onChange(tempColor);
+  }, [onChange, tempColor]);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -28,11 +29,16 @@ export const ColorPicker = ({ value, onChange }) => {
       content={
         <div className={Classes.POPOVER_CONTENT} style={{ zIndex: 9000 }}>
           <ChromePicker
-            color={value || 'rgba(0, 0, 0, 1)'}
+            color={tempColor}
             onChange={handleColorChange}
-            onChangeComplete={handleClose}
             disableAlpha={false}
           />
+          <Button
+            onClick={handleClose}
+            style={{ marginTop: '10px', width: '100%' }}
+          >
+            Apply Color
+          </Button>
         </div>
       }
       placement="bottom"

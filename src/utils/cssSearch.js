@@ -9,11 +9,12 @@ export const CSS_PROPERTIES = [
   'font-weight',
   'font-style',
   'text-decoration',
+  'text-decoration-style',
   'padding',
-  // 'box-shadow',
   'before',
-  'after'
-  // Add more properties as needed
+  'after',
+  'before-color',
+  'after-color'
 ];
 
 export const searchCSSProperties = (term) => {

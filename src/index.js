@@ -7,22 +7,23 @@ import ReactDOM from 'react-dom';
 import { TagPopoverMenu } from './components/TagPopoverMenu';
 
 const extensionName = formatPackageName(pkg.name);
-const panelConfig = {
-  tabTitle: extensionName,
-  settings: [
-    {
-      id: "button-setting",
-      name: "Button test",
-      description: "tests the button",
-      action: {
-        type: "button",
-        onClick: () => { console.log("Button clicked!"); },
-        content: "Button"
-      }
+// TODO what should go in the settings panel?
+// const panelConfig = {
+//   tabTitle: extensionName,
+//   settings: [
+//     {
+//       id: "button-setting",
+//       name: "Button test",
+//       description: "tests the button",
+//       action: {
+//         type: "button",
+//         onClick: () => { console.log("Button clicked!"); },
+//         content: "Button"
+//       }
 
-    }
-  ]
-};
+//     }
+//   ]
+// };
 
 // Store observers and listeners globally so they can be managed
 const runners = {
@@ -47,7 +48,6 @@ const createPopover = (target, tagName, extensionAPI) => {
     parent.style.position = 'absolute';
     parent.style.left = `${rect.left}px`;
     parent.style.top = `${rect.bottom}px`;
-    // parent.style.zIndex = '90';
 
     let selectedStyles = {};
 
@@ -123,7 +123,7 @@ const removeListenersFromTags = () => {
 
 async function onload({ extensionAPI }) {
   try {
-    extensionAPI.settings.panel.create(panelConfig);
+    // extensionAPI.settings.panel.create(panelConfig);
 
     // Set up the observer
     runners.observer = createObserver(() => {

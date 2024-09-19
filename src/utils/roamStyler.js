@@ -19,9 +19,20 @@ export const applyStylesToTag = (tagName, styles) => {
         content: ${value};
       }`;
       if (property === 'before') {
-        beforeRule = pseudoRule;
+        beforeRule += pseudoRule;
       } else {
-        afterRule = pseudoRule;
+        afterRule += pseudoRule;
+      }
+    } else if (property === 'before-color' || property === 'after-color') {
+      const pseudo = property.split('-')[0];
+      const pseudoColorRule = `span.rm-page-ref--tag[data-tag="${tagName}"]:${pseudo} {
+        color: transparent;
+        text-shadow: 0 0 0 ${value};
+      }`;
+      if (pseudo === 'before') {
+        beforeRule += pseudoColorRule;
+      } else {
+        afterRule += pseudoColorRule;
       }
     } else {
       mainRules.push(`${property}: ${value};`);

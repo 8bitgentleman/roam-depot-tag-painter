@@ -4,7 +4,6 @@ import { Button, HTMLSelect, NumericInput } from '@blueprintjs/core';
 import { ColorPicker } from './ColorPicker';
 import { PaddingPicker } from './PaddingPicker';
 import { BorderRadiusPicker } from './BorderRadiusPicker';
-import { DropShadowPicker } from './DropShadowPicker';
 import { ContentInput } from './ContentInput';
 
 export const StyleOption = ({ property, value, onChange, onRemove }) => {
@@ -13,9 +12,9 @@ export const StyleOption = ({ property, value, onChange, onRemove }) => {
   };
 
   const renderStylePicker = () => {
-    if (property.includes('color')) {
+    if (property.includes('color') || property === 'before-color' || property === 'after-color') {
       return <ColorPicker value={value} onChange={handleChange} />;
-    } else if (['font-weight', 'font-style', 'text-decoration', 'border-style'].includes(property)) {
+    } else if (['font-weight', 'font-style', 'text-decoration', 'text-decoration-style', 'border-style'].includes(property)) {
       return (
         <HTMLSelect
           value={value}
@@ -28,8 +27,6 @@ export const StyleOption = ({ property, value, onChange, onRemove }) => {
       return <PaddingPicker value={value} onChange={handleChange} />;
     } else if (property === 'border-radius') {
       return <BorderRadiusPicker value={value} onChange={handleChange} />;
-    } else if (property === 'box-shadow') {
-      return <DropShadowPicker value={value} onChange={handleChange} />;
     } else if (property === 'border-width') {
       return (
         <NumericInput
@@ -80,6 +77,8 @@ const getOptionsForProperty = (property) => {
       return ['normal', 'italic', 'oblique'];
     case 'text-decoration':
       return ['none', 'underline', 'overline', 'line-through'];
+    case 'text-decoration-style':
+      return ['solid','double','dotted','dashed', 'wavy'];
     case 'border-style':
       return ['none', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset'];
     default:
