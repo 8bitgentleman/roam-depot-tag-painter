@@ -1,4 +1,4 @@
-Tag Painter is a Roam Research extension that allows you to easily customize the appearance of your tags within Roam.
+Want to create tag styles but don't know CSS? Tag Painter allows you to easily customize the appearance of your tags within Roam.
 
 ## Usage
 
