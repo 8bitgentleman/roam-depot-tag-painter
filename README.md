@@ -18,4 +18,4 @@ Want to create tag styles but don't know CSS? Tag Painter allows you to easily c
 
 ## Example
 
-<img src="https://example.com/tag-painter-screenshot.png" max-width="400"></img>
+<img src="https://github.com/8bitgentleman/roam-depot-tag-painter/raw/main/screenshot.png" max-width="400"></img>
