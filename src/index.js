@@ -1,6 +1,10 @@
+// src/index.js
 import pkg from '../package.json';
 import { formatPackageName } from './utils';
 import createObserver from "roamjs-components/dom/createObserver";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { TagPopoverMenu } from './components/TagPopoverMenu';
 
 const extensionName = formatPackageName(pkg.name);
 const panelConfig = {
@@ -15,33 +19,7 @@ const panelConfig = {
         onClick: () => { console.log("Button clicked!"); },
         content: "Button"
       }
-    },
-    {
-      id: "switch-setting",
-      name: "Switch Test",
-      description: "Test switch component",
-      action: {
-        type: "switch",
-        onChange: (evt) => { console.log("Switch!", evt); }
-      }
-    },
-    {
-      id: "input-setting",
-      name: "Input test",
-      action: {
-        type: "input",
-        placeholder: "placeholder",
-        onChange: (evt) => { console.log("Input Changed!", evt); }
-      }
-    },
-    {
-      id: "select-setting",
-      name: "Select test",
-      action: {
-        type: "select",
-        items: ["one", "two", "three"],
-        onChange: (evt) => { console.log("Select Changed!", evt); }
-      }
+
     }
   ]
 };
@@ -49,48 +27,95 @@ const panelConfig = {
 // Store observers and listeners globally so they can be managed
 const runners = {
   observer: null,
-  listeners: new Set(),
+  listeners: new Map(),
+};
+
+const createPopover = (target, tagName) => {
+  try {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+
+    ReactDOM.render(
+      <TagPopoverMenu
+        tagName={tagName}
+        targetElement={target}
+        onClose={() => {
+          ReactDOM.unmountComponentAtNode(parent);
+          parent.remove();
+        }}
+      />,
+      parent
+    );
+
+    return parent;
+  } catch (error) {
+  }
 };
 
 const popperFunction = (e) => {
-  let tag = e.target.innerText;
-  if (tag.startsWith("#")) {
-    tag = tag.slice(1);
+  try {
+    let tag = e.target.innerText;
+    if (tag.startsWith("#")) {
+      tag = tag.slice(1);
+    }
+    createPopover(e.target, tag);
+  } catch (error) {
   }
-  console.log(tag);
 };
 
 const addListenersToTags = () => {
-  const tags = document.querySelectorAll(".rm-page-ref--tag");
-  tags.forEach(tag => {
-    if (!runners.listeners.has(tag)) {
-      tag.addEventListener("mouseover", popperFunction);
-      runners.listeners.add(tag);
-    }
-  });
+  try {
+    const tags = document.querySelectorAll(".rm-page-ref--tag");
+    tags.forEach(tag => {
+      if (!runners.listeners.has(tag)) {
+        const listener = (e) => popperFunction(e);
+        tag.addEventListener("mouseenter", listener);
+        runners.listeners.set(tag, listener);
+      }
+    });
+  } catch (error) {
+  }
 };
 
 const removeListenersFromTags = () => {
-  runners.listeners.forEach(tag => {
-    tag.removeEventListener("mouseover", popperFunction);
-  });
-  runners.listeners.clear();
+  try {
+    runners.listeners.forEach((listener, tag) => {
+      tag.removeEventListener("mouseenter", listener);
+    });
+    runners.listeners.clear();
+  } catch (error) {
+  }
 };
 
 async function onload({ extensionAPI }) {
-  extensionAPI.settings.panel.create(panelConfig);
+  try {
+    extensionAPI.settings.panel.create(panelConfig);
 
-  runners.observer = createObserver(addListenersToTags);
+    // Set up the observer
+    runners.observer = createObserver(() => {
+      addListenersToTags();
+    });
 
-  console.log(`${extensionName} version ${pkg.version} loaded`);
+    // Initial addition of listeners
+    addListenersToTags();
+
+  } catch (error) {
+    console.error("[onload] Error", error);
+  }
 }
 
 function onunload() {
-  if (runners.observer) {
-    runners.observer.disconnect();
+  try {
+    if (runners.observer) {
+      runners.observer.disconnect();
+    }
+
+    removeListenersFromTags();
+
+    console.log("[onunload]", { extensionName, version: pkg.version });
+  } catch (error) {
+    console.error("[onunload] Error", error);
   }
-  removeListenersFromTags();
-  console.log(`${extensionName} version ${pkg.version} unloaded`);
 }
 
 export default {
