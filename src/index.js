@@ -2,6 +2,7 @@
 import pkg from '../package.json';
 import { formatPackageName } from './utils/utils';
 import createObserver from "roamjs-components/dom/createObserver";
+import createIconButton from "roamjs-components/dom/createIconButton";
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { TagPopoverMenu } from './components/TagPopoverMenu';
@@ -121,32 +122,105 @@ const removeListenersFromTags = () => {
   }
 };
 
-async function onload({ extensionAPI }) {
-  try {
-    // extensionAPI.settings.panel.create(panelConfig);
+let isTagEditingActive = false;
 
-    // Set up the observer
+const toggleTagEditing = (extensionAPI) => {
+  if (isTagEditingActive) {
+    removeListenersFromTags();
+    if (runners.observer) {
+      runners.observer.disconnect();
+      runners.observer = null;
+    }
+  } else {
+    addListenersToTags(extensionAPI);
     runners.observer = createObserver(() => {
       addListenersToTags(extensionAPI);
     });
+  }
+  isTagEditingActive = !isTagEditingActive;
+  updateButtonStyle();
+};
 
-    // Initial addition of listeners
-    addListenersToTags(extensionAPI);
+const updateButtonStyle = () => {
+  const button = document.getElementById('tag-painter-button');
+  if (button) {
+    if (isTagEditingActive) {
+      button.classList.add('bp3-intent-primary');
+    } else {
+      button.classList.remove('bp3-intent-primary');
+    }
+  }
+};
+
+const addTagPainterButton = (extensionAPI) => {
+  const button = createIconButton('style');
+  button.id = 'tag-painter-button';
+  button.addEventListener('click', () => toggleTagEditing(extensionAPI));
+
+  // Find the calendar icon using the correct selector
+  const calendarIcon = document.querySelector('.rm-topbar .bp3-icon-calendar');
+  if (!calendarIcon) {
+    console.error("Couldn't find the calendar icon");
+    return;
+  }
+
+  // Find the parent span of the calendar icon (which should be the bp3-popover-wrapper)
+  const calendarWrapper = calendarIcon.closest('.bp3-popover-wrapper');
+  if (!calendarWrapper) {
+    console.error("Couldn't find the calendar wrapper");
+    return;
+  }
+
+  // Create a container for our button that matches the structure of other topbar items
+  const buttonWrapper = document.createElement('span');
+  buttonWrapper.className = 'bp3-popover-wrapper';
+  const buttonTarget = document.createElement('span');
+  buttonTarget.className = 'bp3-popover-target';
+  buttonTarget.appendChild(button);
+  buttonWrapper.appendChild(buttonTarget);
+
+  // Insert our button wrapper before the calendar wrapper
+  calendarWrapper.parentNode.insertBefore(buttonWrapper, calendarWrapper);
+
+  // Add a spacer between our button and the calendar
+  const spacer = document.createElement('div');
+  spacer.className = 'rm-topbar__spacer-sm';
+  calendarWrapper.parentNode.insertBefore(spacer, calendarWrapper);
+};
+
+// MARK: Load
+async function onload({ extensionAPI }) {
+  try {
+    // extensionAPI.settings.panel.create(panelConfig);
+    addTagPainterButton(extensionAPI);
   } catch (error) {
     console.error("[onload] Error", error);
   }
 }
 
+// MARK: UNLOAD
 function onunload() {
   try {
+    removeListenersFromTags();
     if (runners.observer) {
       runners.observer.disconnect();
     }
 
-    removeListenersFromTags();
-
     // Remove all tag-painter style elements
     document.querySelectorAll('style[id^="tag-painter-style-"]').forEach(el => el.remove());
+
+    // Remove the tag painter button and its associated spacer
+    const button = document.getElementById('tag-painter-button');
+    if (button) {
+      const container = button.closest('.bp3-popover-wrapper');
+      if (container) {
+        const nextSpacer = container.nextElementSibling;
+        if (nextSpacer && nextSpacer.className === 'rm-topbar__spacer-sm') {
+          nextSpacer.remove();
+        }
+        container.remove();
+      }
+    }
 
     console.log("[onunload]", { extensionName, version: pkg.version });
   } catch (error) {
