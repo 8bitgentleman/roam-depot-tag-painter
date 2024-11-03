@@ -1,6 +1,7 @@
 // src/index.js
 import pkg from '../package.json';
 import { formatPackageName } from './utils/utils';
+import { exportTagStyles } from './utils/exportStyles';
 import createObserver from "roamjs-components/dom/createObserver";
 import createIconButton from "roamjs-components/dom/createIconButton";
 import React from 'react';
@@ -214,7 +215,6 @@ const loadAndApplyAllStyles = async (extensionAPI) => {
 };
 
 // MARK: Load
-
 async function onload({ extensionAPI }) {
   try {
     const panelConfig = {
@@ -234,6 +234,20 @@ async function onload({ extensionAPI }) {
               }
               extensionAPI.settings.set('show-topbar-button', evt.target.checked);
             }
+          }
+        },
+        {
+          id: "export-css",
+          name: "Export CSS",
+          description: "Toggle visibility of the Tag Painter button in the topbar",
+          action: {
+            type: "button",
+            onClick: () => {
+              console.log(extensionAPI);
+              
+              exportTagStyles(extensionAPI);
+            },
+            content: "Export"
           }
         }
       ]
