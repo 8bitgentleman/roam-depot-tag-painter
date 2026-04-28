@@ -35,6 +35,8 @@ export const DropShadowPicker = ({ value, onChange }) => {
     onChange(shadowString.trim());
   };
 
+  const propValues = { hOffset, vOffset, blur, spread };
+
   return (
     <div>
       <div style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
@@ -42,7 +44,7 @@ export const DropShadowPicker = ({ value, onChange }) => {
           <NumericInput
             key={prop}
             placeholder={prop.charAt(0).toUpperCase() + prop.slice(1)}
-            value={eval(prop)}
+            value={propValues[prop]}
             onValueChange={(valueAsNumber) => handleChange(prop, valueAsNumber)}
             min={prop === 'blur' || prop === 'spread' ? 0 : undefined}
             stepSize={1}

@@ -14,7 +14,8 @@ export const CSS_PROPERTIES = [
   'before',
   'after',
   'before-color',
-  'after-color'
+  'after-color',
+  'box-shadow'
 ];
 
 export const searchCSSProperties = (term) => {

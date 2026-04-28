@@ -5,6 +5,7 @@ import { ColorPicker } from './ColorPicker';
 import { PaddingPicker } from './PaddingPicker';
 import { BorderRadiusPicker } from './BorderRadiusPicker';
 import { ContentInput } from './ContentInput';
+import { DropShadowPicker } from './DropShadowPicker';
 
 export const StyleOption = ({ property, value, onChange, onRemove }) => {
   const handleChange = (newValue) => {
@@ -40,6 +41,8 @@ export const StyleOption = ({ property, value, onChange, onRemove }) => {
       );
     } else if (property === 'before' || property === 'after') {
       return <ContentInput value={value} onChange={handleChange} />;
+    } else if (property === 'box-shadow') {
+      return <DropShadowPicker value={value || '0px 0px 0px 0px rgba(0,0,0,1)'} onChange={handleChange} />;
     }
     // For other properties, use a NumericInput
     return (
